@@ -772,7 +772,7 @@ if is_service_enabled horizon; then
 fi
 
 if is_service_enabled q-agt; then
-    if [[ "$Q_PLUGIN" = "openvswitch" ]]; then
+    if [[ "$Q_PLUGIN" = "openvswitch" || "$Q_PLUGIN" = "nec" ]]; then
         # Install deps
         # FIXME add to files/apts/quantum, but don't install if not needed!
         if [[ "$os_PACKAGE" = "deb" ]]; then
@@ -1211,6 +1211,11 @@ if is_service_enabled quantum; then
         Q_PLUGIN_CONF_FILENAME=linuxbridge_conf.ini
         Q_DB_NAME="quantum_linux_bridge"
         Q_PLUGIN_CLASS="quantum.plugins.linuxbridge.lb_quantum_plugin.LinuxBridgePluginV2"
+    elif [[ "$Q_PLUGIN" = "nec" ]]; then
+        Q_PLUGIN_CONF_PATH=etc/quantum/plugins/nec
+        Q_PLUGIN_CONF_FILENAME=nec.ini
+        Q_DB_NAME="quantum_nec"
+        Q_PLUGIN_CLASS="quantum.plugins.nec.nec_plugin.NECPluginV2"
     else
         echo "Unknown Quantum plugin '$Q_PLUGIN'.. exiting"
         exit 1
@@ -1306,6 +1311,10 @@ if is_service_enabled q-svc; then
         if [[ "$LB_VLAN_RANGES" != "" ]]; then
             iniset /$Q_PLUGIN_CONF_FILE VLANS network_vlan_ranges $LB_VLAN_RANGES
         fi
+    elif [[ "$Q_PLUGIN" = "nec" ]]; then
+        iniset $Q_CONF_FILE DEFAULT api_extensions_path quantum/plugins/nec/extensions/
+        iniset /$Q_PLUGIN_CONF_FILE OFC host ${OFC_HOST:-127.0.0.1}
+        iniset /$Q_PLUGIN_CONF_FILE OFC port ${OFC_PORT:-8888}
     fi
 fi
 
@@ -1355,6 +1364,12 @@ if is_service_enabled q-agt; then
             iniset /$Q_PLUGIN_CONF_FILE LINUX_BRIDGE physical_interface_mappings $LB_INTERFACE_MAPPINGS
         fi
         AGENT_BINARY="$QUANTUM_DIR/bin/quantum-linuxbridge-agent"
+    elif [[ "$Q_PLUGIN" = "nec" ]]; then
+        # Set up integration bridge
+        OVS_BRIDGE=${OVS_BRIDGE:-br-int}
+        quantum_setup_ovs_bridge $OVS_BRIDGE
+        sudo ovs-vsctl --no-wait set-controller $OVS_BRIDGE tcp:${OFC_HOST:-127.0.0.1}
+        AGENT_BINARY="$QUANTUM_DIR/bin/quantum-nec-agent"
     fi
     # Update config w/rootwrap
     iniset /$Q_PLUGIN_CONF_FILE AGENT root_helper "$Q_RR_COMMAND"
@@ -1379,7 +1394,7 @@ if is_service_enabled q-dhcp; then
     # Update config w/rootwrap
     iniset $Q_DHCP_CONF_FILE DEFAULT root_helper "$Q_RR_COMMAND"
 
-    if [[ "$Q_PLUGIN" = "openvswitch" ]]; then
+    if [[ "$Q_PLUGIN" = "openvswitch" || "$Q_PLUGIN" = "nec" ]]; then
         iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSInterfaceDriver
     elif [[ "$Q_PLUGIN" = "linuxbridge" ]]; then
         iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.BridgeInterfaceDriver
@@ -1741,7 +1756,7 @@ if is_service_enabled quantum; then
     add_nova_opt "quantum_admin_tenant_name=$SERVICE_TENANT_NAME"
     add_nova_opt "quantum_url=http://$Q_HOST:$Q_PORT"
 
-    if [[ "$Q_PLUGIN" = "openvswitch" ]]; then
+    if [[ "$Q_PLUGIN" = "openvswitch" || $Q_PLUGIN = "nec" ]]; then
         NOVA_VIF_DRIVER="nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver"
     elif [[ "$Q_PLUGIN" = "linuxbridge" ]]; then
         NOVA_VIF_DRIVER="nova.virt.libvirt.vif.QuantumLinuxBridgeVIFDriver"
