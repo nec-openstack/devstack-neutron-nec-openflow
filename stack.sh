@@ -1394,10 +1394,12 @@ if is_service_enabled q-dhcp; then
     # Update config w/rootwrap
     iniset $Q_DHCP_CONF_FILE DEFAULT root_helper "$Q_RR_COMMAND"
 
-    if [[ "$Q_PLUGIN" = "openvswitch" || "$Q_PLUGIN" = "nec" ]]; then
+    if [[ "$Q_PLUGIN" = "openvswitch" ]]; then
         iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSInterfaceDriver
     elif [[ "$Q_PLUGIN" = "linuxbridge" ]]; then
         iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.BridgeInterfaceDriver
+    elif [[ "$Q_PLUGIN" = "nec" ]]; then
+        iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSVethInterfaceDriver
     fi
 fi
 

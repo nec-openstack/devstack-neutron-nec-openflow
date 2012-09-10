@@ -110,5 +110,15 @@ fi
 
 # Quantum dhcp agent runs dnsmasq
 if is_service_enabled q-dhcp; then
-    sudo kill -9 $(ps aux | awk '/[d]nsmasq.+interface=tap/ { print $2 }')
+    PIDS=$(ps aux | awk '/[d]nsmasq.+interface=(tap|ns-)/ { print $2 }')
+    echo $PIDS
+    if [ -n "$PIDS" ]; then
+	sudo kill -9 $PIDS
+    fi
+fi
+
+# Quantum network namespace
+if is_service_enabled q-dhcp || is_service_enabled q-l3; then
+    quantum-netns-cleanup --config-file /etc/quantum/quantum.conf \
+        --config-file /etc/quantum/dhcp_agent.ini --force
 fi
