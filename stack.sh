@@ -1400,6 +1400,7 @@ if is_service_enabled q-dhcp; then
         iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.BridgeInterfaceDriver
     elif [[ "$Q_PLUGIN" = "nec" ]]; then
         iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSVethInterfaceDriver
+        #iniset $Q_DHCP_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSInterfaceDriver
     fi
 fi
 
@@ -1422,8 +1423,12 @@ if is_service_enabled q-l3; then
     iniset $Q_L3_CONF_FILE DEFAULT root_helper "$Q_RR_COMMAND"
 
     quantum_setup_keystone $Q_L3_CONF_FILE DEFAULT set_auth_url
-    if [[ "$Q_PLUGIN" == "openvswitch" ]]; then
-        iniset $Q_L3_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSInterfaceDriver
+    if [[ "$Q_PLUGIN" == "openvswitch" || "$Q_PLUGIN" == "nec" ]]; then
+        if [[ "$Q_PLUGIN" == "nec" ]]; then
+            iniset $Q_L3_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSVethInterfaceDriver
+        else
+            iniset $Q_L3_CONF_FILE DEFAULT interface_driver quantum.agent.linux.interface.OVSInterfaceDriver
+        fi
         iniset $Q_L3_CONF_FILE DEFAULT external_network_bridge $PUBLIC_BRIDGE
         # Set up external bridge
         # Create it if it does not exist
@@ -1908,7 +1913,7 @@ if is_service_enabled q-svc; then
         EXT_NET_ID=$(quantum net-create ext_net -- --router:external=True | grep ' id ' | get_field 2)
         EXT_GW_IP=$(quantum subnet-create --ip_version 4 $EXT_NET_ID $FLOATING_RANGE -- --enable_dhcp=False | grep 'gateway_ip' | get_field 2)
         quantum router-gateway-set $ROUTER_ID $EXT_NET_ID
-        if [[ "$Q_PLUGIN" = "openvswitch" ]] && [[ "$Q_USE_NAMESPACE" = "True" ]]; then
+        if [[ "$Q_PLUGIN" = "openvswitch" || "$Q_PLUGIN" = "nec" ]] && [[ "$Q_USE_NAMESPACE" = "True" ]]; then
             CIDR_LEN=${FLOATING_RANGE#*/}
             sudo ip addr add $EXT_GW_IP/$CIDR_LEN dev $PUBLIC_BRIDGE
             sudo ip link set $PUBLIC_BRIDGE up
@@ -1919,7 +1924,7 @@ if is_service_enabled q-svc; then
             # Explicitly set router id in l3 agent configuration
             iniset $Q_L3_CONF_FILE DEFAULT router_id $ROUTER_ID
         fi
-   fi
+    fi
 
 elif is_service_enabled mysql && is_service_enabled nova; then
     # Create a small network
