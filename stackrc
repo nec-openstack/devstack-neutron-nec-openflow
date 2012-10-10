@@ -105,6 +105,14 @@ TEMPEST_BRANCH=master           # 01Oct2012: 2f5db941f5
 HEAT_REPO=${GIT_BASE}/heat-api/heat.git
 HEAT_BRANCH=master              # 27Sep2012: ed99838c28
 
+# Trema (OpenFlow controller for NEC OpenFlow Plugin)
+TREMA_REPO=https://github.com/trema/trema.git
+TREMA_APPS_REPO=https://github.com/trema/apps.git
+#TREMA_BRANCH=develop
+TREMA_BRANCH=0.2.4
+#TREMA_APPS_BRANCH=master
+TREMA_APPS_BRANCH=1377c14cdf68888bae28d1065baa80cf7913b829
+
 # Nova hypervisor configuration.  We default to libvirt with **kvm** but will
 # drop back to **qemu** if we are unable to load the kvm module.  ``stack.sh`` can
 # also install an **LXC** or **OpenVZ** based system.

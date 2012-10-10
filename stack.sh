@@ -313,6 +313,7 @@ source $TOP_DIR/lib/n-vol
 source $TOP_DIR/lib/ceilometer
 source $TOP_DIR/lib/heat
 source $TOP_DIR/lib/quantum
+source $TOP_DIR/lib/trema
 
 # Set the destination directories for OpenStack projects
 HORIZON_DIR=$DEST/horizon
@@ -862,6 +863,9 @@ if is_service_enabled quantum; then
     # quantum
     git_clone $QUANTUM_REPO $QUANTUM_DIR $QUANTUM_BRANCH
 fi
+if is_service_enabled trema; then
+    install_trema_sliceable
+fi
 if is_service_enabled heat; then
     install_heat
 fi
@@ -910,6 +914,9 @@ fi
 if is_service_enabled quantum; then
     setup_develop $QUANTUM_CLIENT_DIR
     setup_develop $QUANTUM_DIR
+fi
+if is_service_enabled trema; then
+    configure_trema_sliceable
 fi
 if is_service_enabled heat; then
     configure_heat
@@ -1318,6 +1325,10 @@ if is_service_enabled q-svc; then
     fi
 fi
 
+if is_service_enabled trema; then
+    start_trema_sliceable
+fi
+
 # Quantum agent (for compute nodes)
 if is_service_enabled q-agt; then
     # Configure agent for plugin
@@ -1370,6 +1381,10 @@ if is_service_enabled q-agt; then
         quantum_setup_ovs_bridge $OVS_BRIDGE
         sudo ovs-vsctl --no-wait set-controller $OVS_BRIDGE tcp:${OFC_HOST:-127.0.0.1}
         AGENT_BINARY="$QUANTUM_DIR/bin/quantum-nec-agent"
+        if [ -n "$OVS_INTERFACE" ]; then
+             sudo ovs-vsctl --no-wait add-port $OVS_BRIDGE $OVS_INTERFACE
+        fi
+	setup_ovs_tunnels
     fi
     # Update config w/rootwrap
     iniset /$Q_PLUGIN_CONF_FILE AGENT root_helper "$Q_RR_COMMAND"

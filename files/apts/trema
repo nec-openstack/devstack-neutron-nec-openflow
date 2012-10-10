@@ -1,0 +1,14 @@
+gcc
+make
+ruby
+ruby-dev
+irb
+file
+libjson-perl
+libpcap-dev
+sqlite3
+libsqlite3-dev
+apache2-mpm-prefork
+libdbi-perl
+libdbd-sqlite3-perl
+libglib2.0-0

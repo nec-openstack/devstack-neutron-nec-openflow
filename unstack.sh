@@ -24,6 +24,7 @@ DATA_DIR=${DATA_DIR:-${DEST}/data}
 # Get project function libraries
 source $TOP_DIR/lib/cinder
 source $TOP_DIR/lib/n-vol
+source $TOP_DIR/lib/trema
 
 # Determine what system we are running on.  This provides ``os_VENDOR``,
 # ``os_RELEASE``, ``os_UPDATE``, ``os_PACKAGE``, ``os_CODENAME``
@@ -121,4 +122,8 @@ fi
 if is_service_enabled q-dhcp || is_service_enabled q-l3; then
     quantum-netns-cleanup --config-file /etc/quantum/quantum.conf \
         --config-file /etc/quantum/dhcp_agent.ini --force
+fi
+
+if is_service_enabled trema; then
+    stop_trema_sliceable
 fi
