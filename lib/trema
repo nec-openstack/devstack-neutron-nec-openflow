@@ -14,40 +14,21 @@ SLICEABLE_PATCH="https://raw.github.com/nec-openstack/quantum-openflow-plugin/fo
 TREMA_LOG_LEVEL=${TREMA_LOG_LEVEL:-info}
 
 function install_trema_sliceable() {
-    sudo mkdir -p $TREMA_DIR
-    if [ ! -w $TREMA_DIR ]; then
-        sudo chown `whoami` $TREMA_DIR
-    fi
+    git_clone $TREMA_REPO $TREMA_DIR/trema $TREMA_BRANCH
+    git_clone $TREMA_APPS_REPO $TREMA_DIR/apps $TREMA_APPS_BRANCH
 
     # build
-    sliceable=$TREMA_DIR/apps/sliceable_switch/sliceable_switch
-    if [ ! -e $sliceable ] || [[ "$RECLONE" == "yes" ]]; then
-        git clone $TREMA_REPO $TREMA_DIR/trema
-        git clone $TREMA_APPS_REPO $TREMA_DIR/apps
-        pushd $TREMA_DIR/trema
-            git checkout $TREMA_BRANCH
-        popd
-        pushd $TREMA_DIR/apps
-            git checkout $TREMA_APPS_BRANCH
-            #FIXME
-            if [ -n "$SLICEABLE_PATCH" ]; then
-                patch -p1 < $SLICEABLE_PATCH
-            fi
-        popd
-    
-        pushd $TREMA_DIR/trema
-            ./build.rb
-        popd
-        make -C $TREMA_DIR/apps/topology
-        make -C $TREMA_DIR/apps/flow_manager
-        make -C $TREMA_DIR/apps/sliceable_switch
-    fi
+    pushd $TREMA_DIR/trema
+        ./build.rb
+    popd
+    make -C $TREMA_DIR/apps/topology
+    make -C $TREMA_DIR/apps/flow_manager
+    make -C $TREMA_DIR/apps/sliceable_switch
 }
 
 function configure_trema_sliceable() {
     # prepare dir
-    for dir in apache db log script
-    do
+    for dir in apache db log script; do
         mkdir -p $VAR_DIR/$dir
     done
     sudo mkdir -p $TREMA_TMP_DIR
@@ -147,3 +128,6 @@ function setup_ovs_tunnels() {
          done
     fi
 }
+
+# Restore xtrace
+$XTRACE

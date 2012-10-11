@@ -107,11 +107,12 @@ HEAT_BRANCH=master              # 27Sep2012: ed99838c28
 
 # Trema (OpenFlow controller for NEC OpenFlow Plugin)
 TREMA_REPO=https://github.com/trema/trema.git
-TREMA_APPS_REPO=https://github.com/trema/apps.git
 #TREMA_BRANCH=develop
 TREMA_BRANCH=0.2.4
-#TREMA_APPS_BRANCH=master
-TREMA_APPS_BRANCH=1377c14cdf68888bae28d1065baa80cf7913b829
+
+#TREMA_APPS_REPO=https://github.com/trema/apps.git
+TREMA_APPS_REPO=https://github.com/amotoki/trema-sliceable-switch.git
+TREMA_APPS_BRANCH=sliceable-quantum
 
 # Nova hypervisor configuration.  We default to libvirt with **kvm** but will
 # drop back to **qemu** if we are unable to load the kvm module.  ``stack.sh`` can
