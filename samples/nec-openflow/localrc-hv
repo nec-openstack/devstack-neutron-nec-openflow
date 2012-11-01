@@ -29,7 +29,11 @@ LOG_COLOR=False
 #OFFLINE=1
 #RECLONE=1
 
+function load_additional_config() {
+  test -f $1 && source $1
+}
 #CFGDIR=$HOME/tool/config
-#source $CFGDIR/01-proxy
-#source $CFGDIR/02-repos
-#source $CFGDIR/10-local
+CFGDIR=.
+load_additional_config $CFGDIR/01-proxy
+load_additional_config $CFGDIR/02-repos
+load_additional_config $CFGDIR/10-local

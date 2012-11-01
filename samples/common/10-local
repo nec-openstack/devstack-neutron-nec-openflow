@@ -1,0 +1,12 @@
+# -*- mode: bash -*-
+
+#HOST_IP_IFACE=eth0
+#HOST_IP=$(LC_ALL=C /sbin/ifconfig ${HOST_IP_IFACE} | grep -m 1 'inet addr' | cut -d: -f2 | awk '{print $1;}')
+
+#FIXED_RANGE=192.168.57.0/24
+#NETWORK_GATEWAY=192.168.57.254
+
+#EXTRA_OPTS=(
+  #vnc_keymap=ja
+  #use_ipv6=True
+#)

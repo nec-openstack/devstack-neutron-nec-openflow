@@ -1,0 +1,4 @@
+# -*- mode: bash -*-
+export http_proxy=http://proxygate2.nic.nec.co.jp:8080/
+export https_proxy=http://proxygate2.nic.nec.co.jp:8080/
+export no_proxy=127.0.0.0/8,192.168.0.0/16,172.16.0.0/12,10.0.0.0/8,.nec.co.jp
