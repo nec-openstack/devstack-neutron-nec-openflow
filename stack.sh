@@ -776,7 +776,9 @@ if is_service_enabled q-agt; then
     if [[ "$Q_PLUGIN" = "openvswitch" || "$Q_PLUGIN" = "nec" ]]; then
         # Install deps
         # FIXME add to files/apts/quantum, but don't install if not needed!
-        if [[ "$os_PACKAGE" = "deb" ]]; then
+	if [[ "$USE_CUSTOM_OVS" = "True" ]]; then
+	    echo "You need to install Open vSwitch manually."
+        elif [[ "$os_PACKAGE" = "deb" ]]; then
             kernel_version=`cat /proc/version | cut -d " " -f3`
             install_package make fakeroot dkms openvswitch-switch openvswitch-datapath-dkms linux-headers-$kernel_version
         else
@@ -1322,6 +1324,7 @@ if is_service_enabled q-svc; then
         iniset $Q_CONF_FILE DEFAULT api_extensions_path quantum/plugins/nec/extensions/
         iniset /$Q_PLUGIN_CONF_FILE OFC host ${OFC_HOST:-127.0.0.1}
         iniset /$Q_PLUGIN_CONF_FILE OFC port ${OFC_PORT:-8888}
+        iniset /$Q_PLUGIN_CONF_FILE OFC driver ${OFC_DRIVER:-trema}
     fi
 fi
 

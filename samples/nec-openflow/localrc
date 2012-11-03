@@ -4,7 +4,15 @@
 #RABBIT_HOST=${CC_HOST}
 #Q_HOST=${CC_HOST}
 #OFC_HOST=${Q_HOST}
+#OFC_PORT=8888
 
+# OFC_DRIVER: Shortcut name or full class path can be used.
+# Shortcut names are defined in quantum/plugins/nec/driver/__init__.py.
+#OFC_DRIVER=trema
+#OFC_DRIVER=pfc
+#OFC_DRIVER=quantum.plugins.nec.drivers.pfc.PFCDriver
+
+#USE_CUSTOM_OVS=True
 #OVS_INTERFACE=eth1
 #GRE_REMOTE_IPS=192.168.122.102:192.168.122.103
 
