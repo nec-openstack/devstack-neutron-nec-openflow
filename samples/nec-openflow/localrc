@@ -45,8 +45,8 @@ SCREEN_LOGDIR=$_LOGDIR
 LOGFILE=$_LOGDIR/devstack.log
 LOG_COLOR=False
 
-#OFFLINE=1
-#RECLONE=1
+#OFFLINE=True
+#RECLONE=True
 
 function load_additional_config() {
   test -f $1 && source $1
