@@ -6,6 +6,9 @@ Q_HOST=${CC_HOST}
 OFC_HOST=${Q_HOST}
 #OFC_PORT=8888
 
+# Uncomment this when nec-openstack repository is used.
+#QUANTUM_REPO=https://github.com/nec-openstack/quantum.git
+
 #USE_CUSTOM_OVS=True
 #OVS_INTERFACE=eth1
 GRE_REMOTE_IPS=$CC_HOST
