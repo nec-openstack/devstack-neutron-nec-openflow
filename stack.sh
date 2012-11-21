@@ -1379,15 +1379,17 @@ if is_service_enabled q-agt; then
         fi
         AGENT_BINARY="$QUANTUM_DIR/bin/quantum-linuxbridge-agent"
     elif [[ "$Q_PLUGIN" = "nec" ]]; then
-        # Set up integration bridge
-        OVS_BRIDGE=${OVS_BRIDGE:-br-int}
-        quantum_setup_ovs_bridge $OVS_BRIDGE
-        sudo ovs-vsctl --no-wait set-controller $OVS_BRIDGE tcp:${OFC_HOST:-127.0.0.1}
+        if [[ "$SKIP_OVS_BRIDGE_SETUP" != "True" ]]; then
+            # Set up integration bridge
+            OVS_BRIDGE=${OVS_BRIDGE:-br-int}
+            quantum_setup_ovs_bridge $OVS_BRIDGE
+            sudo ovs-vsctl --no-wait set-controller $OVS_BRIDGE tcp:${OFC_HOST:-127.0.0.1}
+            if [ -n "$OVS_INTERFACE" ]; then
+                sudo ovs-vsctl --no-wait add-port $OVS_BRIDGE $OVS_INTERFACE
+            fi
+	    setup_ovs_tunnels
+	fi
         AGENT_BINARY="$QUANTUM_DIR/bin/quantum-nec-agent"
-        if [ -n "$OVS_INTERFACE" ]; then
-             sudo ovs-vsctl --no-wait add-port $OVS_BRIDGE $OVS_INTERFACE
-        fi
-	setup_ovs_tunnels
     fi
     # Update config w/rootwrap
     iniset /$Q_PLUGIN_CONF_FILE AGENT root_helper "$Q_RR_COMMAND"
