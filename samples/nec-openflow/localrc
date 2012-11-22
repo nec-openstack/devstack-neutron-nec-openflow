@@ -5,6 +5,8 @@
 #Q_HOST=${CC_HOST}
 #OFC_HOST=${Q_HOST}
 #OFC_PORT=8888
+#OFC_RETRY_MAX=0
+#OFC_RETRY_INTERVAL=1
 
 # OFC_DRIVER: Shortcut name or full class path can be used.
 # Shortcut names are defined in quantum/plugins/nec/driver/__init__.py.

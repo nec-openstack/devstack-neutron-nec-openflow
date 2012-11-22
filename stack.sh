@@ -1325,6 +1325,8 @@ if is_service_enabled q-svc; then
         iniset /$Q_PLUGIN_CONF_FILE OFC host ${OFC_HOST:-127.0.0.1}
         iniset /$Q_PLUGIN_CONF_FILE OFC port ${OFC_PORT:-8888}
         iniset /$Q_PLUGIN_CONF_FILE OFC driver ${OFC_DRIVER:-trema}
+        iniset /$Q_PLUGIN_CONF_FILE OFC api_retry_max ${OFC_RETRY_MAX:-0}
+        iniset /$Q_PLUGIN_CONF_FILE OFC api_retry_interval ${OFC_RETRY_INTERVAL:-1}
     fi
 fi
 
