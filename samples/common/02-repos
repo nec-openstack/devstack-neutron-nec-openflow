@@ -1,6 +1,6 @@
 # -*- mode: bash -*-
 
-SPICA_REPO_BASE=http://spica.spf.cl.nec.co.jp/repos/git/openstack
+SPICA_REPO_BASE=git://orion.spf.cl.nec.co.jp/repos/git/openstack
 CINDER_REPO=$SPICA_REPO_BASE/cinder.git
 CINDERCLIENT_REPO=$SPICA_REPO_BASE/python-cinderclient.git
 NOVA_REPO=$SPICA_REPO_BASE/nova.git
