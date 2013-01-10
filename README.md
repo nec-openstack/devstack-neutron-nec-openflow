@@ -1,93 +1,118 @@
+DevStack for NEC OpenFlow plugin (Folsom)
+=========================================
+
 DevStack is a set of scripts and utilities to quickly deploy an OpenStack cloud.
+This repository provides DevStack (Fomsom release of OpenStack) with NEC OpenFlow pluign support.
 
-# Goals
+# Basic usage
 
-* To quickly build dev OpenStack environments in a clean Ubuntu or Fedora environment
-* To describe working configurations of OpenStack (which code branches work together?  what do config files look like for those branches?)
-* To make it easier for developers to dive into OpenStack so that they can productively contribute without having to understand every part of the system at once
-* To make it easy to prototype cross-project features
-* To sanity-check OpenStack builds (used in gating commits to the primary repos)
+Prepare localrc (configuration file of DevStack).
+* Sample configuration files are available in samples subdirectory.
+  * samples/localrc, samples/local.sh : examples distributed with DevStack upstream
+  * NEC OpenFlow plugin specific
+    * samples/nec-openflow/localrc : localrc for All-in-One setup or Controller node in multi-node setup
+    * samples/nec-openflow/localrc-hv : localrc for Compute node in multi-node setup
+    * samples/common/01-proxy : Example of proxy settings
+    * samples/common/02-repos : Example of local mirror
+* For the detail how to customize localrc, please see below.
 
-Read more at http://devstack.org (built from the gh-pages branch)
+Next, run devstack
 
-IMPORTANT: Be sure to carefully read `stack.sh` and any other scripts you execute before you run them, as they install software and may alter your networking configuration.  We strongly recommend that you run `stack.sh` in a clean and disposable vm when you are first getting started.
+    $ ./stack.sh
 
-# Devstack on Xenserver
+# All-in-One (Single node)
 
-If you would like to use Xenserver as the hypervisor, please refer to the instructions in `./tools/xen/README.md`.
+In All-in-One mode all components of OpenStack and OpenFlow controller on a single machine.
+If you would like to run them on multiple physical machines, please see **Multi-Node** section below.
 
-# Versions
+## Configuration parameters
 
-The devstack master branch generally points to trunk versions of OpenStack components.  For older, stable versions, look for branches named stable/[release] in the DevStack repo.  For example, you can do the following to create a diablo OpenStack cloud:
+The sample localrc is available at samples/nec-openflow/localrc.
 
-    git checkout stable/diablo
-    ./stack.sh
+* **_PASSWORD** : Password for all components
+* **OFC_HOST** : IP adddress of the OpenFlow controller which provides REST API (Sliceable Network Management API)
+* **OFC_PORT** : TCP port of the OpenFlow controller for REST API
+* **OFC_DRIVER** : Shortcut name or full class path of OpenFlow controller driver.
 
-You can also pick specific OpenStack project releases by setting the appropriate `*_BRANCH` variables in `localrc` (look in `stackrc` for the default set).  Usually just before a release there will be milestone-proposed branches that need to be tested::
+If you want to use OpenFlow controller running on a different host, configure OFC_HOST and OFC_PORT.
 
-    GLANCE_REPO=https://github.com/openstack/glance.git
-    GLANCE_BRANCH=milestone-proposed
+## Start devstack
 
-# Start A Dev Cloud
+To start devstack, just type:
 
-Installing in a dedicated disposable vm is safer than installing on your dev machine!  To start a dev cloud:
+    $ ./stack.sh
 
-    ./stack.sh
+## Stop devstack
 
-When the script finishes executing, you should be able to access OpenStack endpoints, like so:
+To stop devstack:
 
-* Horizon: http://myhost/
-* Keystone: http://myhost:5000/v2.0/
+    $ ./unstack.sh
 
-We also provide an environment file that you can use to interact with your cloud via CLI:
+# Multi-Node setup
 
-    # source openrc file to load your environment with osapi and ec2 creds
-    . openrc
-    # list instances
-    nova list
+## Network requirements
 
-If the EC2 API is your cup-o-tea, you can create credentials and use euca2ools:
+At the minimum setup, two networks are required.
 
-    # source eucarc to generate EC2 credentials and set up the environment
-    . eucarc
-    # list instances using ec2 api
-    euca-describe-instances
+* ***Control Plane Network*** :
+  A network used for Quantum internal communication, communication among
+  OpenStack components and OpenFlow control channel between OpenFlow controler and OpenFlow switch(es).
+* ***Data Network*** : A network for user data traffic controlled by OpenFlow. If you don't have
+  any hardware OpenFlow switch, you can use GRE tunnel option (GRE_REMOTE_IPS) to create OpenFlow Network
+  over Control Plane Network (in this case only one network is required).
 
-# Customizing
+## Cluster Controller Node
 
-You can override environment variables used in `stack.sh` by creating file name `localrc`.  It is likely that you will need to do this to tweak your networking configuration should you need to access your cloud from a different host.
+### Configurations
 
-# RPC Backend
+The sample localrc is available at ***samples/nec-openflow/localrc***.
 
-Multiple RPC backends are available. Currently, this
-includes RabbitMQ (default), Qpid, and ZeroMQ. Your backend of
-choice may be selected via the `localrc`.
+* **_PASSWORD** : Password for all components
+* **OFC_HOST** : IP adddress of the OpenFlow controller which provides REST API (Sliceable Network Management API)
+* **OFC_PORT** : TCP port of the OpenFlow controller for REST API
+* **OFC_DRIVER** : Shortcut name or full class path of OpenFlow controller driver.
+* **OVS_INTERFACE**: Uncomment the line and set a physical network interface name
+  (e.g., eth1) connected to an OpenFlow enabled network.
+  The interface specified in OVS_INTERFACE will be attached to an Open vSwitch integration bridge ***br-int***
+  (the bridge name is specified by OVS_BRIDGE variable). When you use tunneling like GRE
+  to connect to other nodes, comment out this line (or set an empty value).
+* **GRE_REMOTE_IPS**: Colon-separated list of remote IP adresses (e.g., 192.168.122.102:192.168.122.103).
+  GRE tunnels from an Open vSwitch bridge (specified by OVS_BRIDGE) to each specified remote IP address
+  will be created.
 
-Note that selecting more than one RPC backend will result in a failure.
+See [Devstack][devstack] for more information.
 
-Example (ZeroMQ):
+### Start the controller node
 
-    ENABLED_SERVICES="$ENABLED_SERVICES,-rabbit,-qpid,zeromq"
+Start devstack:
 
-Example (Qpid):
+    $ ./stack.sh
 
-    ENABLED_SERVICES="$ENABLED_SERVICES,-rabbit,-zeromq,qpid"
+## Compute Node
 
-# Swift
+On a compute node, nova-compute and quantum-plugin-agent runs.
 
-Swift is not installed by default, you can enable easily by adding this to your `localrc`:
+### Configurations
 
-    enable_service swift
+The sample localrc is available at ***samples/nec-openflow/localrc-hv***. Copy it to localrc.
 
-If you want a minimal Swift install with only Swift and Keystone you can have this instead in your `localrc`:
+* **CC_HOST**: IP Address of the Cluster Controller on the control network
+* **_PASSWORD** : Password for all components
+* **OVS_INTERFACE**: A physical network interface name
+  (e.g., eth1) connected to an OpenFlow enabled network.
+  The interface specified in OVS_INTERFACE will be attached to an Open vSwitch bridge
+  (named as OVS_BRIDGE) during the installation. When you use tunneling like GRE
+  to connect to other nodes, comment out this line (or set an empty value).
+* **GRE_REMOTE_IPS**: Remote IP adresses joined with colon
+  (e.g., 192.168.122.102:192.168.122.103).
+  GRE tunnels from an Open vSwitch bridge (named as OVS_BRIDGE) to
+  the specified remote IP addresses will be configured during the installation.
 
-    disable_all_services
-    enable_service key mysql swift
+See [Devstack][devstack] for more information.
 
-If you use Swift with Keystone, Swift will authenticate against it. You will need to make sure to use the Keystone URL to auth against.
+### Start the compute node
 
-If you are enabling `swift3` in `ENABLED_SERVICES` devstack will install the swift3 middleware emulation. Swift will be configured to act as a S3 endpoint for Keystone so effectively replacing the `nova-objectstore`.
+    $ ./stack.sh
 
-Only Swift proxy server is launched in the screen session all other services are started in background and managed by `swift-init` tool.
-
-By default Swift will configure 3 replicas (and one spare) which could be IO intensive on a small vm, if you only want to do some quick testing of the API you can choose to only have one replica by customizing the variable `SWIFT_REPLICAS` in your `localrc`.
+There are no order to start the controller node and compute nodes, but if you are not familiar with OpenStack,
+we recommend to start the controller node first and start compute nodes after stack.sh on the controller finished.
