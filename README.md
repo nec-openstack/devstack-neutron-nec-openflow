@@ -23,7 +23,7 @@ Next, run devstack
 # All-in-One (Single node)
 
 In All-in-One mode all components of OpenStack and OpenFlow controller on a single machine.
-If you would like to run them on multiple physical machines, please see **Multi-Node** section below.
+If you would like to run them on multiple physical machines, please see **Multi-Node setup** section below.
 
 ## Configuration parameters
 
@@ -35,6 +35,8 @@ The sample localrc is available at samples/nec-openflow/localrc.
 * **OFC_DRIVER** : Shortcut name or full class path of OpenFlow controller driver.
 
 If you want to use OpenFlow controller running on a different host, configure OFC_HOST and OFC_PORT.
+
+See [Devstack][devstack] for more information or read the codes :-)
 
 ## Start devstack
 
@@ -116,3 +118,5 @@ See [Devstack][devstack] for more information.
 
 There are no order to start the controller node and compute nodes, but if you are not familiar with OpenStack,
 we recommend to start the controller node first and start compute nodes after stack.sh on the controller finished.
+
+[devstack]: http://devstack.org/
