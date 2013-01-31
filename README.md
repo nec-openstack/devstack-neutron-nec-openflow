@@ -33,6 +33,12 @@ The sample localrc is available at samples/nec-openflow/localrc.
 * **OFC_HOST** : IP adddress of the OpenFlow controller which provides REST API (Sliceable Network Management API)
 * **OFC_PORT** : TCP port of the OpenFlow controller for REST API
 * **OFC_DRIVER** : Shortcut name or full class path of OpenFlow controller driver.
+  * trema : Trema Sliceable Switch
+  * pfc_v3 : ProgrammableFlow Controller V3.0
+  * pfc_v4 : ProgrammableFlow Controller V4.0
+* **USE_CUSTOM_OVS** : If True DevStack does not install Ubuntu package of Open vSwitch.
+  It is useful if you want to use your special or customized version of Open vSwitch.
+  You must install Open vSwitch manually **in advance**.
 
 If you want to use OpenFlow controller running on a different host, configure OFC_HOST and OFC_PORT.
 
@@ -73,6 +79,7 @@ The sample localrc is available at ***samples/nec-openflow/localrc***.
 * **OFC_HOST** : IP adddress of the OpenFlow controller which provides REST API (Sliceable Network Management API)
 * **OFC_PORT** : TCP port of the OpenFlow controller for REST API
 * **OFC_DRIVER** : Shortcut name or full class path of OpenFlow controller driver.
+* **USE_CUSTOM_OVS** : If True DevStack does not install Ubuntu package of Open vSwitch.
 * **OVS_INTERFACE**: Uncomment the line and set a physical network interface name
   (e.g., eth1) connected to an OpenFlow enabled network.
   The interface specified in OVS_INTERFACE will be attached to an Open vSwitch integration bridge ***br-int***
