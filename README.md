@@ -2,7 +2,7 @@ DevStack for NEC OpenFlow plugin (Folsom)
 =========================================
 
 DevStack is a set of scripts and utilities to quickly deploy an OpenStack cloud.
-This repository provides DevStack (Fomsom release of OpenStack) with NEC OpenFlow pluign support.
+This repository provides DevStack (Folsom release of OpenStack) with NEC OpenFlow pluign support.
 
 # Basic usage
 
