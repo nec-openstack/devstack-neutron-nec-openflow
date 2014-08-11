@@ -51,21 +51,8 @@ function init_trema {
     rm -f filter.db slice.db
     ./create_tables.sh
     mv filter.db slice.db $TREMA_SS_DB_DIR
-    # Make sure that apache cgi has write access to the databases
-    sudo chown -R www-data.www-data $TREMA_SS_DB_DIR
+    sed -i -e "s|/home/sliceable_switch/db|$TREMA_SS_DB_DIR|" restapi.psgi
     cd $_pwd
-
-    # Setup HTTP Server for sliceable_switch
-    cp $TREMA_SS_DIR/{Slice.pm,Filter.pm,config.cgi} $TREMA_SS_SCRIPT_DIR
-    sed -i -e "s|/home/sliceable_switch/db|$TREMA_SS_DB_DIR|" \
-        $TREMA_SS_SCRIPT_DIR/config.cgi
-
-    sudo cp $TREMA_SS_DIR/apache/sliceable_switch $TREMA_SS_APACHE_CONFIG
-    sudo sed -i -e "s|/home/sliceable_switch/script|$TREMA_SS_SCRIPT_DIR|" \
-        $TREMA_SS_APACHE_CONFIG
-    # TODO(gabriel-bezerra): use some function from lib/apache to enable these modules
-    sudo a2enmod rewrite actions
-    enable_apache_site sliceable_switch
 
     cp $TREMA_SS_DIR/sliceable_switch_null.conf $TREMA_SS_CONFIG
     sed -i -e "s|^\$apps_dir.*$|\$apps_dir = \"$TREMA_DIR/apps\"|" \
@@ -82,8 +69,14 @@ function gem_install {
     sudo $RUBYGEMS_CMD install $pkg
 }
 
+function gem_version {
+    [ -n "$RUBYGEMS_CMD" ] || get_gem_command
+    $RUBYGEMS_CMD --version
+}
+
 function get_gem_command {
-    # Trema requires ruby 1.8, so gem1.8 is checked first
+    # Trema requires ruby 1.8 on Ubuntu 12.04.
+    # Since Ubuntu 14.04, Trema works with newer versions of Ruby.
     RUBYGEMS_CMD=$(which gem1.8 || which gem)
     if [ -z "$RUBYGEMS_CMD" ]; then
         echo "Warning: ruby gems command not found."
@@ -91,6 +84,15 @@ function get_gem_command {
 }
 
 function install_trema {
+    # rubygems on Ubuntu 14.04 has a bug which prevents Trema installation.
+    if [[ "$os_CODENAME" == "trusty" ]]; then
+	local gem_ver=$(gem_version)
+	if [[ "$gem_ver" == "1.8.23" ]]; then
+	    gem_install rubygems-update
+            sudo update_rubygems
+	fi
+    fi
+
     # Trema
     gem_install trema
     # Sliceable Switch
@@ -101,7 +103,10 @@ function install_trema {
 }
 
 function start_trema {
-    restart_apache_server
+    screen_it trema "cd $TREMA_SS_DIR && plackup -r -p $OFC_API_PORT restapi.psgi"
+    if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget --no-proxy -q -O- http://$OFC_API_HOST:$OFC_API_PORT/networks; do sleep 1; done"; then
+        die $LINENO "Trema Sliceable Switch REST API did not start"
+    fi
 
     sudo LOGGING_LEVEL=$TREMA_LOG_LEVEL TREMA_TMP=$TREMA_TMP_DIR \
         trema run -d -c $TREMA_SS_CONFIG
